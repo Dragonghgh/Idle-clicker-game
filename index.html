@@ -33,26 +33,60 @@
       width: 150px;
       height: 150px;
     }
+    .upgrade-button {
+      margin-top: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 0.5rem;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    .upgrade-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
   <div class="game-container">
     <div id="score">Coins: 0</div>
     <button id="clickButton">
-      <img src="" alt="Coin" />
+      <img src="https://www.pngrepo.com/png/45294/512/gold-coin.png" alt="Coin" />
     </button>
+    <div id="upgradeSection">
+      <button id="upgradeButton1" class="upgrade-button" disabled>Upgrade: +1 Coins per Click (10 Coins)</button>
+      <button id="upgradeButton2" class="upgrade-button" disabled>Upgrade: +2 Coins per Click (25 Coins)</button>
+      <button id="upgradeButton3" class="upgrade-button" disabled>Upgrade: +5 Coins per Click (50 Coins)</button>
+      <button id="upgradeButton4" class="upgrade-button" disabled>Upgrade: +10 Coins per Click (100 Coins)</button>
+      <hr />
+      <button id="autoUpgrade1" class="upgrade-button" disabled>Auto Miner: Earn 1 Coin per Second (100 Coins)</button>
+      <button id="autoUpgrade2" class="upgrade-button" disabled>Automated Miner: Earn 5 Coins per Second (500 Coins)</button>
+      <button id="autoUpgrade3" class="upgrade-button" disabled>Auto Factory: Earn 20 Coins per Second (1000 Coins)</button>
+    </div>
   </div>
 
   <script>
     let coins = 0;
+    let coinsPerClick = 1;
+    let autoCoinsPerSecond = 0;
     const scoreDisplay = document.getElementById("score");
     const button = document.getElementById("clickButton");
+    const upgradeButton1 = document.getElementById("upgradeButton1");
+    const upgradeButton2 = document.getElementById("upgradeButton2");
+    const upgradeButton3 = document.getElementById("upgradeButton3");
+    const upgradeButton4 = document.getElementById("upgradeButton4");
+    const autoUpgrade1 = document.getElementById("autoUpgrade1");
+    const autoUpgrade2 = document.getElementById("autoUpgrade2");
+    const autoUpgrade3 = document.getElementById("autoUpgrade3");
 
     // Load saved data
     const savedData = JSON.parse(localStorage.getItem("clickerGameData"));
     const now = Date.now();
     if (savedData) {
       coins = savedData.coins || 0;
+      autoCoinsPerSecond = savedData.autoCoinsPerSecond || 0;
       const lastTime = savedData.timestamp || now;
       const secondsAway = Math.floor((now - lastTime) / 1000);
       const offlineEarnings = secondsAway; // 1 coin per second away
@@ -69,22 +103,125 @@
     function saveGame() {
       localStorage.setItem("clickerGameData", JSON.stringify({
         coins: coins,
+        autoCoinsPerSecond: autoCoinsPerSecond,
         timestamp: Date.now()
       }));
     }
 
     // Click event
     button.addEventListener("click", () => {
-      coins++;
+      coins += coinsPerClick;
       updateScore();
       saveGame();
+      checkUpgradeAvailability();
     });
+
+    // Upgrade events
+    upgradeButton1.addEventListener("click", () => {
+      if (coins >= 10) {
+        coins -= 10;
+        coinsPerClick += 1;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+    upgradeButton2.addEventListener("click", () => {
+      if (coins >= 25) {
+        coins -= 25;
+        coinsPerClick += 2;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+    upgradeButton3.addEventListener("click", () => {
+      if (coins >= 50) {
+        coins -= 50;
+        coinsPerClick += 5;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+    upgradeButton4.addEventListener("click", () => {
+      if (coins >= 100) {
+        coins -= 100;
+        coinsPerClick += 10;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+
+    // Auto-upgrade events
+    autoUpgrade1.addEventListener("click", () => {
+      if (coins >= 100) {
+        coins -= 100;
+        autoCoinsPerSecond += 1;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+    autoUpgrade2.addEventListener("click", () => {
+      if (coins >= 500) {
+        coins -= 500;
+        autoCoinsPerSecond += 5;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+    autoUpgrade3.addEventListener("click", () => {
+      if (coins >= 1000) {
+        coins -= 1000;
+        autoCoinsPerSecond += 20;
+        updateScore();
+        checkUpgradeAvailability();
+        saveGame();
+      }
+    });
+
+    // Auto-earn coins every second
+    function autoEarnCoins() {
+      coins += autoCoinsPerSecond;
+      updateScore();
+      saveGame();
+    }
+    setInterval(autoEarnCoins, 1000);
+
+    // Check if upgrades are available
+    function checkUpgradeAvailability() {
+      if (coins >= 10) {
+        upgradeButton1.disabled = false;
+      }
+      if (coins >= 25) {
+        upgradeButton2.disabled = false;
+      }
+      if (coins >= 50) {
+        upgradeButton3.disabled = false;
+      }
+      if (coins >= 100) {
+        upgradeButton4.disabled = false;
+      }
+      if (coins >= 100) {
+        autoUpgrade1.disabled = false;
+      }
+      if (coins >= 500) {
+        autoUpgrade2.disabled = false;
+      }
+      if (coins >= 1000) {
+        autoUpgrade3.disabled = false;
+      }
+    }
 
     // Save on unload
     window.addEventListener("beforeunload", saveGame);
 
     // Initial UI
     updateScore();
+    checkUpgradeAvailability();
   </script>
 </body>
 </html>
